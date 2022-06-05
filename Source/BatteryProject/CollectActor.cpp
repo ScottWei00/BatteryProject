@@ -12,6 +12,8 @@ ACollectActor::ACollectActor()
 	//创建静态组件
 	PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupMesh"));
 	RootComponent = PickupMesh;
+	//默认true为可被拾取的
+	bIsActive = true;
 
 }
 
@@ -40,5 +42,13 @@ bool ACollectActor::IsActive()
 void ACollectActor::SetActive(bool NewPickupState)
 {
 	bIsActive = NewPickupState;
+}
+ 
+
+//基类拾取电池时调用的方法
+void ACollectActor::WasCollected_Implementation()
+{
+	FString PickupDebugString = GetName();
+	//UE_LOG(LogCLass, Log, TEXT("你收集了%s"), *PickupDebugString);  
 }
 

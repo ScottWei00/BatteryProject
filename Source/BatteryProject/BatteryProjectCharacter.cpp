@@ -8,6 +8,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/SphereComponent.h"
+#include "CollectActor.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ABatteryProjectCharacter
@@ -43,6 +45,12 @@ ABatteryProjectCharacter::ABatteryProjectCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	//创建球形组件
+	CollectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollectionSphere"));
+	CollectionSphere->SetupAttachment(RootComponent);
+	CollectionSphere->SetSphereRadius(200.f);
+
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -56,6 +64,9 @@ void ABatteryProjectCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+	//collect收集绑定按键
+	PlayerInputComponent->BindAction("Collect", IE_Pressed, this, &ABatteryProjectCharacter::CollectionPickups);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ABatteryProjectCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ABatteryProjectCharacter::MoveRight);
@@ -74,6 +85,29 @@ void ABatteryProjectCharacter::SetupPlayerInputComponent(class UInputComponent* 
 
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ABatteryProjectCharacter::OnResetVR);
+}
+
+void ABatteryProjectCharacter::CollectionPickups()
+{
+	//遍历所有区域的覆盖的actor，将其存入数组内
+	TArray<AActor*> CollectedActors;
+	CollectionSphere->GetOverlappingActors(CollectedActors);
+	//记录收集的电池能量
+	float CollectPower = 0.f;
+	//遍历数组
+	for (int32 iCollected = 0; iCollected < CollectedActors.Num(); iCollected++)
+	{
+		//转化actor为ACollectActor类
+		ACollectActor* const TestPickup = Cast<ACollectActor>(CollectedActors[iCollected]);
+		//检查是否转换成功&&actor是否被销毁(未被销毁为true)&&actor是否处于激活状态（未被拾取为true）
+		if (TestPickup && !TestPickup->IsPendingKill() && TestPickup->IsActive())
+		{
+			//收集该actor
+			TestPickup->WasCollected();
+			//更新该actor状态为已激活
+			TestPickup->SetActive(false);
+		}
+	}
 }
 
 

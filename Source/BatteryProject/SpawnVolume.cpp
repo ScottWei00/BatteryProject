@@ -4,6 +4,7 @@
 #include "SpawnVolume.h" 
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "CollectActor.h"
 
 // Sets default values
 ASpawnVolume::ASpawnVolume()
@@ -14,6 +15,10 @@ ASpawnVolume::ASpawnVolume()
 	//创建触发器盒子组件
 	WhereToSpawn = CreateDefaultSubobject<UBoxComponent>(TEXT("WhereToSpawn"));
 	RootComponent = WhereToSpawn;
+
+	//触发时间的延迟区间
+	SpawnDelayRangeLow = 1.0f;
+	SpawnDelayRangeHigh = 4.5f;
 }
 
 /// <summary>
@@ -52,6 +57,10 @@ void ASpawnVolume::SpawnPickup()
 			//触发拾取
 			ACollectActor* const SpawnedPickup = world->SpawnActor<ACollectActor>(WhatToSpawn, 
 				SpawnLocation, SpawnRotation, SpawnParams);
+
+			//绑定方法到全局定时器
+			SpawnDelay = FMath::FRandRange(SpawnDelayRangeLow, SpawnDelayRangeHigh);
+			GetWorldTimerManager().SetTimer(SpawnTimer, this, &ASpawnVolume::SpawnPickup, SpawnDelay, false);
 		}
 	}
 }
@@ -60,7 +69,9 @@ void ASpawnVolume::SpawnPickup()
 void ASpawnVolume::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	SpawnDelay = FMath::FRandRange(SpawnDelayRangeLow, SpawnDelayRangeHigh);
+	GetWorldTimerManager().SetTimer(SpawnTimer, this, &ASpawnVolume::SpawnPickup, SpawnDelay, false);
 }
 
 // Called every frame

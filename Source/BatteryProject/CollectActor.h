@@ -41,4 +41,12 @@ public:
 	//改变激活状态
 	UFUNCTION(BlueprintCallable, Category = "Pickup")
 	void SetActive(bool NewPickupState);
+
+	/// <summary>
+	/// 当拾取物体被收集时调用此方法
+	/// BlueprintNativeEvent可以被蓝图执行
+	/// </summary>
+	UFUNCTION(BlueprintNativeEvent)
+	void WasCollected();
+	virtual void WasCollected_Implementation();
 };

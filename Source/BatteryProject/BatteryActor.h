@@ -17,5 +17,9 @@ class BATTERYPROJECT_API ABatteryActor : public ACollectActor
 public:
 	//设置物体属性的默认值
 	ABatteryActor();
+
+	//重写基类拾取的方法
+	void WasCollected_Implementation() override;
+
 	
 };

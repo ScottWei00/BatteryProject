@@ -29,6 +29,9 @@ private:
 	//管理一个新的触发拾取
 	void SpawnPickup();
 
+	//真实延迟
+	float SpawnDelay;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -36,6 +39,15 @@ protected:
 	//定义触发拾取
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 		TSubclassOf<class ACollectActor> WhatToSpawn;
+
+	//定时器
+	FTimerHandle SpawnTimer;
+	//最小延迟
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	float SpawnDelayRangeLow;
+	//最大延迟
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	float SpawnDelayRangeHigh;
 
 public:	
 	// Called every frame
